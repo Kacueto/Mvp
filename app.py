@@ -64,7 +64,6 @@ def agregar_usuario():
         #buscar Idusuario del usuario insertado justo anteriormente
         cursor.execute("SELECT MAX(UsuarioID) FROM Usuarios")
         ultimo_id = cursor.fetchone()[0]
-        print(ultimo_id)
         
 
         if tipo_usuario == "Cliente":
@@ -112,6 +111,10 @@ def agregar_restaurante(restaurante_id, direccion, telefono, cantidad_mesas, usu
         # Insertar nuevo restaurante en la tabla Restaurantes asociado al usuario_id
         cursor.execute("INSERT INTO Restaurantes (RestauranteID, Dirección, Teléfono, CantidadMesas, UsuarioID) VALUES (%s, %s, %s, %s, %s)", (restaurante_id, direccion, telefono, cantidad_mesas, usuario_id))
         db.commit()
+        print(cantidad_mesas)
+        for i in range(cantidad_mesas):
+            
+            agregar_mesas(restaurante_id)
 
         return {'mensaje': 'Restaurante agregado correctamente'}
     except Exception as e:
@@ -156,6 +159,24 @@ def verificar_contraseña(contraseña_ingresada, contraseña_almacenada):
 
     # Compara el hash calculado con el hash almacenado
     return hash_ingresado == contraseña_almacenada
+
+def agregar_mesas(RestauranteID):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Buscar el usuario por nombre de usuario
+        cursor.execute("INSERT INTO Mesas (RestauranteID, Disponibilidad) VALUES (%s, %s)", (RestauranteID, 0 ))
+        db.commit()
+        
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+
+
 @app.teardown_appcontext
 def close_db(e=None):
     db = g.pop('db', None)
