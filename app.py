@@ -110,7 +110,7 @@ def agregar_restaurante(restaurante_id, direccion, telefono, cantidad_mesas, usu
         cursor = db.cursor()
 
         # Insertar nuevo restaurante en la tabla Restaurantes asociado al usuario_id
-        cursor.execute("INSERT INTO Restaurantes (RestauranteID, Direccion, Telefono, CantidadMesas, UsuarioID) VALUES (%s, %s, %s, %s, %s)", (restaurante_id, direccion, telefono, cantidad_mesas, usuario_id))
+        cursor.execute("INSERT INTO Restaurantes (RestauranteID, Dirección, Teléfono, CantidadMesas, UsuarioID) VALUES (%s, %s, %s, %s, %s)", (restaurante_id, direccion, telefono, cantidad_mesas, usuario_id))
         db.commit()
 
         return {'mensaje': 'Restaurante agregado correctamente'}
@@ -120,6 +120,42 @@ def agregar_restaurante(restaurante_id, direccion, telefono, cantidad_mesas, usu
     finally:
         cursor.close()
 
+@app.route('/verificar_login', methods=['POST'])
+def verificar_login():
+    datos_login = request.json
+    nombre_usuario = datos_login.get('NombreUsuario')
+    contrasena = datos_login.get('Contraseña')
+
+    if nombre_usuario is None or contrasena is None:
+        return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
+
+    try:
+        db = get_db()
+        cursor = db.cursor()
+
+        # Buscar el usuario por nombre de usuario
+        cursor.execute("SELECT * FROM Usuarios WHERE NombreUsuario = %s", (nombre_usuario,))
+        usuario = cursor.fetchone()
+        if usuario is None or not verificar_contraseña(contrasena, usuario[2]):
+            return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
+        
+        # Puedes devolver información adicional sobre el usuario si es necesario
+        return jsonify({'mensaje': 'Inicio de sesión exitoso', 'UsuarioID': usuario[0], 'NombreUsuario': usuario[1]}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+
+import hashlib
+
+def verificar_contraseña(contraseña_ingresada, contraseña_almacenada):
+    # Calcula el hash SHA-256 de la contraseña proporcionada durante el inicio de sesión
+    hash_ingresado = hashlib.sha256(contraseña_ingresada.encode('utf-8')).hexdigest()
+
+    # Compara el hash calculado con el hash almacenado
+    return hash_ingresado == contraseña_almacenada
 @app.teardown_appcontext
 def close_db(e=None):
     db = g.pop('db', None)
