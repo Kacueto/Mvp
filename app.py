@@ -1,24 +1,12 @@
 from flask import Flask, g, request, jsonify
-import mysql.connector
+from commons.dbConnection import db_connection
 from flask_cors import CORS
 import hashlib
 
 app = Flask(__name__)
 
 CORS(app, origins="http://127.0.0.1:5500")
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_HOST'] = 'localhost' 
-app.config['MYSQL_DB'] = 'mvpbbd'
-def get_db():
-    if 'db' not in g:
-        g.db = mysql.connector.connect(
-            user=app.config['MYSQL_USER'],
-            password=app.config['MYSQL_PASSWORD'],
-            host=app.config['MYSQL_HOST'],
-            database=app.config['MYSQL_DB']
-        )
-    return g.db
+
 
 # Ruta para agregar un nuevo usuario
 @app.route('/agregar_usuario', methods=['POST'])
@@ -44,8 +32,8 @@ def agregar_usuario():
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
 
     try:
-        db = get_db()
-        cursor = db.cursor()
+       
+        cursor = db_connection.cursor()
 
         # Verificar si el usuario ya existe
         cursor.execute("SELECT UsuarioID FROM Usuarios WHERE NombreUsuario = %s", (nombre_usuario,))
@@ -59,7 +47,7 @@ def agregar_usuario():
 
         # Insertar nuevo usuario en la tabla Usuarios
         cursor.execute("INSERT INTO Usuarios (NombreUsuario, Contraseña) VALUES (%s, %s)", (nombre_usuario, hashed_contrasena))
-        db.commit()
+        db_connection.commit()
 
         #buscar Idusuario del usuario insertado justo anteriormente
         cursor.execute("SELECT MAX(UsuarioID) FROM Usuarios")
@@ -89,12 +77,12 @@ def agregar_usuario():
 
 def agregar_cliente(nombre,apellido, correo, telefono, usuario_id):
     try:
-        db = get_db()
-        cursor = db.cursor()
+        
+        cursor = db_connection.cursor()
 
         # Insertar nuevo cliente en la tabla Clientes asociado al usuario_id
         cursor.execute("INSERT INTO Clientes (Nombre, Apellido, CorreoElectronico, Teléfono, UsuarioID) VALUES (%s, %s, %s, %s, %s)", (nombre, apellido, correo, telefono, usuario_id))
-        db.commit()
+        db_connection.commit()
 
         return {'mensaje': 'Cliente agregado correctamente'}
     except Exception as e:
@@ -105,12 +93,12 @@ def agregar_cliente(nombre,apellido, correo, telefono, usuario_id):
 
 def agregar_restaurante(restaurante_id, direccion, telefono, cantidad_mesas, usuario_id):
     try:
-        db = get_db()
-        cursor = db.cursor()
+        
+        cursor = db_connection.cursor()
 
         # Insertar nuevo restaurante en la tabla Restaurantes asociado al usuario_id
         cursor.execute("INSERT INTO Restaurantes (RestauranteID, Dirección, Teléfono, CantidadMesas, UsuarioID) VALUES (%s, %s, %s, %s, %s)", (restaurante_id, direccion, telefono, cantidad_mesas, usuario_id))
-        db.commit()
+        db_connection.commit()
         print(cantidad_mesas)
         for i in range(cantidad_mesas):
             
@@ -133,8 +121,8 @@ def verificar_login():
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
 
     try:
-        db = get_db()
-        cursor = db.cursor()
+        
+        cursor = db_connection.cursor()
 
         # Buscar el usuario por nombre de usuario
         cursor.execute("SELECT * FROM Usuarios WHERE NombreUsuario = %s", (nombre_usuario,))
@@ -162,12 +150,12 @@ def verificar_contraseña(contraseña_ingresada, contraseña_almacenada):
 
 def agregar_mesas(RestauranteID):
     try:
-        db = get_db()
-        cursor = db.cursor()
+        
+        cursor = db_connection.cursor()
         
         # Buscar el usuario por nombre de usuario
         cursor.execute("INSERT INTO Mesas (RestauranteID, Disponibilidad) VALUES (%s, %s)", (RestauranteID, 0 ))
-        db.commit()
+        db_connection.commit()
         
 
     except Exception as e:
@@ -177,11 +165,7 @@ def agregar_mesas(RestauranteID):
         cursor.close()
 
 
-@app.teardown_appcontext
-def close_db(e=None):
-    db = g.pop('db', None)
-    if db is not None:
-        db.close()
+
         
 if __name__ == '__main__':
     app.run(debug=True)
