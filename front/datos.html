@@ -1,0 +1,114 @@
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Principal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="js/confirmacion.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.1/dist/css/adminlte.min.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel (optional) -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <ion-icon name="restaurant" class="img-circle elevation-2 icon-sidebar" size="large"></ion-icon>
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="usuario">Usuario</a>
+                    </div>
+                </div>
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <li class="nav-item">
+                            <a href="/logueado.html" class="nav-link">
+                                <ion-icon name="home" class="icon-sidebar"></ion-icon>
+                                <p>
+                                    Inicio
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="reservar.html" class="nav-link">
+                                <ion-icon name="book" class="icon-sidebar"></ion-icon>
+                                <p>
+                                    Reservas
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="datos.html" class="nav-link">
+                                <ion-icon name="person-circle" class="icon-sidebar"></ion-icon>
+                                <p>
+                                    Mis datos
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item btn btn-danger">
+                            <a href="#" class="nav-link" id="logout">Cerrar sesion</a>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- /.sidebar-menu -->
+        </aside>
+        <div class="content-wrapper" style="min-height: 520px;">
+            <h1>Datos</h1>
+            <section class="content">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Descripcion del dato</th>
+                            <th scope="col">dato</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Nombre del restaurante</th>
+                            <td id="nombre"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Direccion del restaurante</th>
+                            <td id="rest"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Telefono</th>
+                            <td id="tel"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+    <style>
+        .icon-sidebar {
+            color: white;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let usuario = localStorage.getItem("currentUser")
+            if (usuario || usuario != "") {
+                usuario = JSON.parse(usuario)
+                document.querySelector("#nombre").innerHTML = usuario.infousuario.RestauranteID;
+                document.querySelector("#rest").innerHTML = usuario.infousuario.Direccion;
+                document.querySelector("#tel").innerHTML = usuario.infousuario.Telefono;
+            }
+        })
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+
+</html>

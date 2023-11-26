@@ -1,9 +1,20 @@
 version: '3'
 
 services:
+  front:
+    build:
+      context: ./front/
+      dockerfile: dockerfile
+    container_name: front-app
+    ports:
+      - 80:80
+    volumes:
+      - ./front:/front
+    depends_on:
+      - web
   web:
     build:
-      context: ./
+      context: ./app/
       dockerfile: dockerfile
     container_name: flask-app
     ports:
@@ -13,7 +24,6 @@ services:
     command: "python app.py"
     depends_on:
       - mysql
-
   mysql:
     image: mariadb:10.4.27
     container_name: mariadb-db

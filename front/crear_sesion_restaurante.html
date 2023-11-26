@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Restaurante</title>
+    <link rel="stylesheet" href="styles_registro_restaurante.css">
+</head>
+<body>
+    <div class="signup-container">
+        <h1>Registro de Restaurante</h1>
+        <form class="signup-form" action="procesar_registro_restaurante.php" method="POST">
+            <label for="usuario">Usuario:</label>
+            <input type="text" id="usuario" name="usuario" required>
+
+            <label for="contrasena">Contraseña:</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+
+            <label for="verificarContrasena">Verificar Contraseña:</label>
+            <input type="password" id="verificarContrasena" name="verificarContrasena" required>
+
+            <label for="nombre">Nombre del Restaurante:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion" required>
+
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" name="telefono" pattern="[0-9]{10}" placeholder="Ej. 1234567890" required>
+
+            <label for="mesas">Cantidad de Mesas:</label>
+            <input type="number" id="mesas" name="mesas" min="1" required>
+
+            <button type="button" onclick="enviarDatosRestaurante()">Registrar</button>
+        </form>
+
+        <a class="login-link" href="iniciar_sesion.html">¿Ya tienes una cuenta? Iniciar Sesión</a>
+    </div>
+
+    <script src="script_registro_restaurante.js"></script>
+</body>
+</html>

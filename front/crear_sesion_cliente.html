@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Sesión Cliente</title>
+    <link rel="stylesheet" href="styles_crear_sesion_cliente.css">
+</head>
+<body>
+    <div class="signup-container">
+        <h1>Crear Cuenta</h1>
+        <form class="signup-form" id="signupForm">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="apellido">Apellido:</label>
+            <input type="text" id="apellido" name="apellido" required>
+
+            <label for="email">Correo electrónico:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Teléfono:</label>
+            <input type="tel" id="phone" name="phone" required>
+
+            <label for="username">Nombre de usuario:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="confirmPassword">Confirmar Contraseña:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+
+            <button type="button" onclick="enviarDatos()">Crear Cuenta</button>
+        </form>
+
+        <a class="login-link" href="iniciar_sesion.html">¿Ya tienes una cuenta? Iniciar Sesión</a>
+    </div>
+
+    <script src="script_crear_sesion_cliente.js"></script>
+</body>
+</html>
