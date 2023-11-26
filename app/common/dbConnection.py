@@ -19,7 +19,8 @@ class DB:
             user=self.config['MYSQL_USER'],
             password=self.config['MYSQL_PASSWORD'],
             host=self.config['MYSQL_HOST'],
-            database=self.config['MYSQL_DB']
+            database=self.config['MYSQL_DB'],
+            
         )
 
     def close_db(self):
