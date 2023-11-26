@@ -7,7 +7,7 @@ services:
       dockerfile: dockerfile
     container_name: flask-app
     ports:
-      - "5000:5000"
+      - 5000:5000
     volumes:
       - ./app:/app
     command: "python app.py"
@@ -23,7 +23,7 @@ services:
       MYSQL_USER: flask_user
       MYSQL_PASSWORD: flask_password
     ports:
-      - "3306:3306"
+      - 3306:3306
     volumes:
       - mariadb_data:/var/lib/mysql
 

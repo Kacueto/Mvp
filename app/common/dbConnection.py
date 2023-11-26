@@ -2,13 +2,16 @@
 
 import mysql.connector
 
+from decouple import config
+import mysql.connector
+
 class DB:
     config={}
     def __init__(self):
-        self.config['MYSQL_USER'] = 'root'
-        self.config['MYSQL_PASSWORD'] = ''
-        self.config['MYSQL_HOST'] = 'localhost' 
-        self.config['MYSQL_DB'] = 'mvpbbd'
+        self.config['MYSQL_USER'] = config('MYSQL_USER')
+        self.config['MYSQL_PASSWORD'] = config('MYSQL_PASSWORD')
+        self.config['MYSQL_HOST'] = config('MYSQL_HOST') 
+        self.config['MYSQL_DB'] = config('MYSQL_DATABASE')
         
 
     def get_db(self):

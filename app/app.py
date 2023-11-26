@@ -5,6 +5,8 @@ import hashlib
 from model.usuario import Usuario
 from model.cliente import Cliente
 from model.restaurante import Restaurante
+import json
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -117,7 +119,7 @@ def agregar_restaurante(restaurante, usuario_id):
 @app.route('/verificar_login', methods=['POST'])
 def verificar_login():
     login = Usuario(request.json)
-    print(login.contrasena)
+    
 
     if login.nombre is None or login.contrasena is None:
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
@@ -131,9 +133,37 @@ def verificar_login():
         usuario = cursor.fetchone()
         if usuario is None or not verificar_contraseña(login.contrasena, usuario[2]):
             return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
+        print(usuario[0])
         
+        
+       
+        cursor.execute("SELECT * from Restaurantes where UsuarioID = %s",(usuario[0],))
+        tipov = cursor.fetchone()
+        if tipov is None:
+            tipo = 'cliente'
+            cursor.execute("SELECT * from clientes where UsuarioID = %s",(usuario[0],))
+            tipov = cursor.fetchone()
+            tipov = {
+                'ClienteID': tipov[0],
+                'UsuarioID': tipov[1],
+                'Nombre': tipov[2],
+                'Apellido': tipov[3],
+                'Correo': tipov[4],
+                'Telefono': tipov[5]
+            }  
+        else:   
+            tipo = 'restaurante' 
+            tipov = {
+                'RestauranteID': tipov[0],
+                'UsuarioID': tipov[1],
+                'Direccion': tipov[2],
+                'Telefono': tipov[3]
+            }   
+        
+            
+       
         # Puedes devolver información adicional sobre el usuario si es necesario
-        return jsonify({'mensaje': 'Inicio de sesión exitoso', 'UsuarioID': usuario[0], 'NombreUsuario': usuario[1]}), 200
+        return jsonify({'NombreUsuario': usuario[1], 'tipo': tipo, 'infousuario' : tipov}), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -180,13 +210,77 @@ def obtener_mesas_por_restaurante():
         # Obtener todas las mesas del restaurante
         cursor.execute("SELECT * FROM Mesas WHERE RestauranteID = %s", (restaurante_id,))
         mesas = cursor.fetchall()
-
-        return jsonify({'mesas': mesas})
+        mi_json =[{"MesaID": item[0], "RestauranteID": item[1], "Disponibilidad": item[2]} for item in mesas]
+        return jsonify({'mesas': mi_json})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
 
+@app.route('/hacer_reservacion', methods=['POST'])
+def hacer_reservacion():
+    datos = request.json
+    cliente_id = datos.get('cliente_id')
+    restaurante_id = datos.get('restaurante_id')
+    mesa_id = datos.get('mesa_id')
+    fecha = datos.get('fecha')
+    try:
+        cursor = db_connection.cursor()
+
+        cursor.execute("INSERT INTO reservaciones (ClienteID, RestauranteID, MesaID, FechaReservacion) values(%s,%s,%s,%s)",(cliente_id, restaurante_id,mesa_id,fecha))
+        db_connection.commit()
+        return jsonify({'mensaje': 'insercion exitosa'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+@app.route('/estadisticas_restaurante', methods=['GET'])
+def estadisticas_restaurante():
+    datos = request.json
+    restaurante_id = datos.get('restaurante_id')
+    try:
+        cursor = db_connection.cursor()
+
+        # Obtener el número de clientes en el mes actual
+        mes_actual = datetime.now().month
+        año_actual = datetime.now().year
+        fecha_inicio_mes = datetime(año_actual, mes_actual, 1)
+        cursor.execute("SELECT COUNT(DISTINCT ClienteID) FROM reservaciones WHERE RestauranteID = %s AND MONTH(FechaReservacion) = %s AND YEAR(FechaReservacion) = %s", (restaurante_id, mes_actual, año_actual))
+        clientes_en_mes = cursor.fetchone()[0]
+
+        # Obtener el número de reservas totales en los últimos 3 meses
+        fecha_inicio_ultimos_3_meses = datetime.now() - timedelta(days=90)
+        cursor.execute("SELECT COUNT(*) FROM reservaciones WHERE RestauranteID = %s AND FechaReservacion >= %s", (restaurante_id, fecha_inicio_ultimos_3_meses))
+        reservas_ultimos_3_meses = cursor.fetchone()[0]
+
+        return jsonify({
+            'clientes_en_mes': clientes_en_mes,
+            'reservas_ultimos_3_meses': reservas_ultimos_3_meses
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+@app.route('/eliminar_reserva/<int:reserva_id>', methods=['DELETE'])
+def eliminar_reserva(reserva_id):
+    try:
+        cursor = db_connection.cursor()
+
+    # Verificar si la reserva existe antes de intentar eliminarla
+        cursor.execute("SELECT * FROM reservaciones WHERE ReservacionID = %s", (reserva_id,))
+        reserva = cursor.fetchone()
         
+        if not reserva:
+            return jsonify({'mensaje': 'Reserva no encontrada'}), 404
+
+        # Eliminar la reserva
+        cursor.execute("DELETE FROM reservaciones WHERE ReservacionID = %s", (reserva_id,))
+        db_connection.commit()
+
+        return jsonify({'mensaje': 'Reserva eliminada correctamente'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()    
 if __name__ == '__main__':
     app.run(debug=True)
