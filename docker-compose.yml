@@ -17,6 +17,7 @@ services:
       context: ./app/
       dockerfile: dockerfile
     container_name: flask-app
+    restart: on-failure
     ports:
       - 5000:5000
     volumes:
