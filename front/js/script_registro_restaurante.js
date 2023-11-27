@@ -31,7 +31,7 @@ function enviarDatosRestaurante() {
         }
     };
 
-    fetch('tu_backend_url_registro_restaurante', {
+    fetch('web/agregar_usuario', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

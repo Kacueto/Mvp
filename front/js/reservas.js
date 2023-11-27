@@ -1,78 +1,50 @@
 window.onload = function () {
     //aca, cambias la parte de abajo, creas un fetch y despues le pasas los datos de la respuesta json 
     //a la funcion crear vista mesas.
-    datos = {
-        "mesas": [
-            {
-                "Disponibilidad": 0,
-                "MesaID": 21,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 22,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 23,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 24,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 25,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 26,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 27,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 28,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 29,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 30,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 31,
-                "RestauranteID": "RestauranteDondePericos"
-            },
-            {
-                "Disponibilidad": 0,
-                "MesaID": 32,
-                "RestauranteID": "RestauranteDondePericos"
-            }
-        ]
-    }
+  
+    // Obtener el usuario desde localStorage
+    let usuario = localStorage.getItem("currentUser");
+    usuarioparsed = JSON.parse(usuario)
+// Comprobar si el usuario existe
+
+    // Crear el objeto de datos que se enviará al servidor
+    var datosJSON = {
+        
+        restaurante_id: usuarioparsed.infousuario.RestauranteID
+          
+    };
+
+    // Enviar la solicitud Fetch al servidor
+    fetch('web/obtener_mesas_por_restaurante', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datosJSON)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Respuesta del servidor:', data);
+        crearVistaMesas(data);
+        console.log(data)
+    })
+    .catch(error => {
+        console.error('Error al enviar los datos al backend:', error);
+    });
+
+    
+}
+    
+        
+    
     //Para acceder al id del Restaurante es así
-    let usuario = localStorage.getItem("currentUser")
+   
     //id = usuario.infousuario.RestauranteID
     // o en su caso, si es por ID de usuario
     //id = usuario.infousuario.UsuarioID
     //descomenta, dependiendo de lo que tu endpoint pide.
-    crearVistaMesas(datos);
-};
+    
+
 function crearVistaMesas(datos) {
     let string;
     $("#reservas").hide();

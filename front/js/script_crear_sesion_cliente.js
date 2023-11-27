@@ -27,9 +27,11 @@ function enviarDatos() {
             Correo: email,
             Telefono: phone
         }
+    
     };
+    console.log(datosJSON)
 
-    fetch('tu_backend_url', {
+    fetch('web/agregar_usuario', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

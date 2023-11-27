@@ -7,11 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         var usuario = document.getElementById("username").value;
         var contrasena = document.getElementById("password").value;
-        // este "datos" lo cambias por la funcion pedirdatos
+        pedirDatos(usuario,contrasena)
         //, alla solo toca cambiar a direcciones de tu backend. 
         // la funcion pedirdatos solo le pasas user y pass.
-        datos = {"NombreUsuario":"brasas","infousuario":{"Direccion":"calle 32 #26-12","RestauranteID":"las Brasas","Telefono":"3213131","UsuarioID":14},"tipo":"restaurante"}
-        redirUsuario(datos)
+        
     });
 });
 function redirUsuario(datos) {
@@ -44,7 +43,7 @@ function pedirDatos(usuario, contrasena){
             console.log("Datos a enviar al backend:", datosJSON);
     
             // Envía los datos al backend
-            fetch('tu_backend_url_login', {
+            fetch('web/verificar_login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -54,7 +53,7 @@ function pedirDatos(usuario, contrasena){
             .then(response => response.json())
             .then(data => {
                 console.log('Respuesta del servidor:', data);
-                redirUsuario(datos)
+                redirUsuario(data)
             })
             .catch(error => {
                 console.error('Error al enviar los datos al backend:', error);

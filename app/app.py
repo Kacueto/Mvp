@@ -7,6 +7,7 @@ from model.cliente import Cliente
 from model.restaurante import Restaurante
 import json
 from datetime import datetime, timedelta
+import hashlib
 
 app = Flask(__name__)
 
@@ -16,12 +17,10 @@ CORS(app, origins="*")
 # Ruta para agregar un nuevo usuario
 @app.route('/agregar_usuario', methods=['POST'])
 def agregar_usuario():
-    try:
+
        
-        usuario = Usuario(request.json)
-    except Exception as e:
-        
-        return jsonify({'error': 'Error al procesar los parámetros'}), 400
+    usuario = Usuario(request.json)
+    
     
     if usuario.nombre is None or usuario.contrasena is None:
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
@@ -119,29 +118,28 @@ def agregar_restaurante(restaurante, usuario_id):
 @app.route('/verificar_login', methods=['POST'])
 def verificar_login():
     login = Usuario(request.json)
-    
 
     if login.nombre is None or login.contrasena is None:
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
 
+    cursor = None  # Inicializa el cursor a None
+
     try:
-        
         cursor = db_connection.cursor()
 
         # Buscar el usuario por nombre de usuario
         cursor.execute("SELECT * FROM usuarios WHERE NombreUsuario = %s", (login.nombre,))
         usuario = cursor.fetchone()
+
         if usuario is None or not verificar_contraseña(login.contrasena, usuario[2]):
             return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
-        print(usuario[0])
-        
-        
-       
-        cursor.execute("SELECT * from restaurantes where UsuarioID = %s",(usuario[0],))
+
+        cursor.execute("SELECT * from restaurantes where UsuarioID = %s", (usuario[0],))
         tipov = cursor.fetchone()
+
         if tipov is None:
             tipo = 'cliente'
-            cursor.execute("SELECT * from clientes where UsuarioID = %s",(usuario[0],))
+            cursor.execute("SELECT * from clientes where UsuarioID = %s", (usuario[0],))
             tipov = cursor.fetchone()
             tipov = {
                 'ClienteID': tipov[0],
@@ -150,28 +148,28 @@ def verificar_login():
                 'Apellido': tipov[3],
                 'Correo': tipov[4],
                 'Telefono': tipov[5]
-            }  
-        else:   
-            tipo = 'restaurante' 
+            }
+        else:
+            tipo = 'restaurante'
             tipov = {
                 'RestauranteID': tipov[0],
                 'UsuarioID': tipov[1],
                 'Direccion': tipov[2],
                 'Telefono': tipov[3]
-            }   
-        
-            
-       
+            }
+
         # Puedes devolver información adicional sobre el usuario si es necesario
-        return jsonify({'NombreUsuario': usuario[1], 'tipo': tipo, 'infousuario' : tipov}), 200
-        
+        return jsonify({'NombreUsuario': usuario[1], 'tipo': tipo, 'infousuario': tipov}), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
 
-import hashlib
+
+
 
 def verificar_contraseña(contraseña_ingresada, contraseña_almacenada):
     # Calcula el hash SHA-256 de la contraseña proporcionada durante el inicio de sesión
@@ -204,18 +202,20 @@ def obtener_mesas_por_restaurante():
     if restaurante_id is None:
         return jsonify({'error': 'RestauranteID es obligatorio'}), 400
 
+    cursor = None
     try:
         cursor = db_connection.cursor()
 
         # Obtener todas las mesas del restaurante
         cursor.execute("SELECT * FROM mesas WHERE RestauranteID = %s", (restaurante_id,))
         mesas = cursor.fetchall()
-        mi_json =[{"MesaID": item[0], "RestauranteID": item[1], "Disponibilidad": item[2]} for item in mesas]
+        mi_json = [{"MesaID": item[0], "RestauranteID": item[1], "Disponibilidad": item[2]} for item in mesas]
         return jsonify({'mesas': mi_json})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
 
 @app.route('/hacer_reservacion', methods=['POST'])
 def hacer_reservacion():
