@@ -43,7 +43,7 @@ function pedirDatos(usuario, contrasena){
             console.log("Datos a enviar al backend:", datosJSON);
     
             // Envía los datos al backend
-            fetch('http://localhost:5000/verificar_login', {
+            fetch('http://reservalo.duckdns.org:5000/verificar_login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

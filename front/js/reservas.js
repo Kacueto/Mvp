@@ -15,7 +15,7 @@ window.onload = function () {
     };
 
     // Enviar la solicitud Fetch al servidor
-    fetch('web/obtener_mesas_por_restaurante', {
+    fetch('http://reservalo.duckdns.org:5000/obtener_mesas_por_restaurante', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

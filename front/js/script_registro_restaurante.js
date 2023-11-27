@@ -31,7 +31,7 @@ function enviarDatosRestaurante() {
         }
     };
 
-    fetch('web:5000/agregar_usuario', {
+    fetch('http://reservalo.duckdns.org:5000/agregar_usuario', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

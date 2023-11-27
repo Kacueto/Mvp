@@ -31,7 +31,7 @@ function enviarDatos() {
     };
     console.log(datosJSON)
 
-    fetch('web/agregar_usuario', {
+    fetch('http://reservalo.duckdns.org:5000/agregar_usuario', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
