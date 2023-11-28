@@ -1,5 +1,5 @@
 from flask import Flask, g, request, jsonify
-from common.dbConnection import db_connection
+from common.dbConnection import DB
 from flask_cors import CORS
 import hashlib
 from model.usuario import Usuario
@@ -26,7 +26,8 @@ def agregar_usuario():
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
 
     try:
-       
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
 
         # Verificar si el usuario ya existe
@@ -72,15 +73,17 @@ def agregar_usuario():
         return jsonify({'mensaje': 'Usuario agregado correctamente'}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    finally:
+    finally: 
         cursor.close()
+        db.close_db()
 
 
 
 def agregar_cliente( cliente, usuario_id):
     
     try:
-        
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
 
         # Insertar nuevo cliente en la tabla Clientes asociado al usuario_id
@@ -93,12 +96,16 @@ def agregar_cliente( cliente, usuario_id):
         return {'error': str(e)}
     finally:
         cursor.close()
+        db.close_db()
+
 
 def agregar_restaurante(restaurante, usuario_id):
     
     try:
-        
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
+        
 
         # Insertar nuevo restaurante en la tabla Restaurantes asociado al usuario_id
         cursor.execute("INSERT INTO restaurantes (RestauranteID, Dirección, Teléfono, CantidadMesas, UsuarioID) VALUES (%s, %s, %s, %s, %s)", ( restaurante.restaurante_id, restaurante.direccion, restaurante.telefono, restaurante.cantidad_mesas, usuario_id))
@@ -114,6 +121,7 @@ def agregar_restaurante(restaurante, usuario_id):
         return {'error': str(e)}
     finally:
         cursor.close()
+        db.close_db()
 
 @app.route('/verificar_login', methods=['POST'])
 def verificar_login():
@@ -122,9 +130,11 @@ def verificar_login():
     if login.nombre is None or login.contrasena is None:
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
 
-    cursor = None  # Inicializa el cursor a None
+    
 
     try:
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
 
         # Buscar el usuario por nombre de usuario
@@ -165,8 +175,8 @@ def verificar_login():
         return jsonify({'error': str(e)}), 500
 
     finally:
-        if cursor:
-            cursor.close()
+        cursor.close()
+        db.close_db()
 
 
 
@@ -180,8 +190,10 @@ def verificar_contraseña(contraseña_ingresada, contraseña_almacenada):
 
 def agregar_mesas(RestauranteID):
     try:
-        
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
+        
         
         # Buscar el usuario por nombre de usuario
         cursor.execute("INSERT INTO mesas (RestauranteID, Disponibilidad) VALUES (%s, %s)", (RestauranteID, 0 ))
@@ -193,6 +205,7 @@ def agregar_mesas(RestauranteID):
 
     finally:
         cursor.close()
+        db.close_db()
 
 @app.route('/obtener_mesas_por_restaurante', methods=['POST'])
 def obtener_mesas_por_restaurante():
@@ -202,8 +215,10 @@ def obtener_mesas_por_restaurante():
     if restaurante_id is None:
         return jsonify({'error': 'RestauranteID es obligatorio'}), 400
 
-    cursor = None
+    
     try:
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
 
         # Obtener todas las mesas del restaurante
@@ -214,8 +229,8 @@ def obtener_mesas_por_restaurante():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
-        if cursor:
-            cursor.close()
+        cursor.close()
+        db.close_db()
 
 @app.route('/hacer_reservacion', methods=['POST'])
 def hacer_reservacion():
@@ -225,6 +240,8 @@ def hacer_reservacion():
     mesa_id = datos.get('mesa_id')
     fecha = datos.get('fecha')
     try:
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
 
         cursor.execute("INSERT INTO reservaciones (ClienteID, RestauranteID, MesaID, FechaReservacion) values(%s,%s,%s,%s)",(cliente_id, restaurante_id,mesa_id,fecha))
@@ -234,11 +251,14 @@ def hacer_reservacion():
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
+        db.close_db()
 @app.route('/estadisticas_restaurante', methods=['POST'])
 def estadisticas_restaurante():
     datos = request.json
     restaurante_id = datos.get('restaurante_id')
     try:
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
 
         # Obtener el número de clientes en el mes actual
@@ -261,9 +281,12 @@ def estadisticas_restaurante():
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
+        db.close_db()
 @app.route('/eliminar_reserva/<int:reserva_id>', methods=['DELETE'])
 def eliminar_reserva(reserva_id):
     try:
+        db= DB()
+        db_connection = db.get_db()
         cursor = db_connection.cursor()
 
     # Verificar si la reserva existe antes de intentar eliminarla
@@ -282,5 +305,6 @@ def eliminar_reserva(reserva_id):
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()    
+        db.close_db()
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port='5000')

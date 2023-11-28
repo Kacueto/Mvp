@@ -28,4 +28,3 @@ class DB:
         if db is not None:
             db.close()
 
-db_connection = DB().get_db()
