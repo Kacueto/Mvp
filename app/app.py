@@ -37,7 +37,7 @@ def agregar_usuario():
         #agregar verificacion si existe el restaurante con elr estaurante id.
         
         if usuario_existente:
-            cursor.close()
+            
             return jsonify({'error': 'El usuario ya existe'}), 409  
 
         # Aplicar hash a la contraseña antes de almacenarla
@@ -56,28 +56,24 @@ def agregar_usuario():
             resultado_agregar_cliente = agregar_cliente(usuario.datos_cliente, ultimo_id)
             if 'error' in resultado_agregar_cliente:
                 # Manejar el error si ocurrió al agregar el cliente
-                cursor.close()
                 return jsonify(resultado_agregar_cliente), 500
         else:
             cursor.execute("SELECT RestauranteID FROM restaurantes WHERE RestauranteID= %s",(usuario.datos_restaurante.restaurante_id,))
             restaurante_existente = cursor.fetchone()
             if restaurante_existente:
-                cursor.close()
                 return jsonify({'error': 'El restaurante ya existe'}), 409 
             resultado_agregar_restaurante = agregar_restaurante(usuario.datos_restaurante, ultimo_id)
             if 'error' in resultado_agregar_restaurante:
                 # Manejar el error si ocurrió al agregar el restaurante
-                cursor.close()
                 return jsonify(resultado_agregar_restaurante), 500
             
         
-        cursor.close()
+        
         return jsonify({'mensaje': 'Usuario agregado correctamente'}), 201
     except Exception as e:
-        if cursor:
-            cursor.close()
         return jsonify({'error': str(e)}), 500
-   
+    finally:
+        cursor.close()
 
 
 
@@ -90,12 +86,14 @@ def agregar_cliente( cliente, usuario_id):
         # Insertar nuevo cliente en la tabla Clientes asociado al usuario_id
         cursor.execute("INSERT INTO clientes (Nombre, Apellido, CorreoElectronico, Teléfono, UsuarioID) VALUES (%s, %s, %s, %s, %s)", (cliente.nombre, cliente.apellido, cliente.correo, cliente.telefono, usuario_id))
         db_connection.commit()
-        cursor.close()
+
         return {'mensaje': 'Cliente agregado correctamente'}
     except Exception as e:
-        if cursor:
-            cursor.close()
+        # Manejo de errores específico para agregar_cliente
         return {'error': str(e)}
+    finally:
+        cursor.close()
+
 def agregar_restaurante(restaurante, usuario_id):
     
     try:
@@ -109,13 +107,13 @@ def agregar_restaurante(restaurante, usuario_id):
         for i in range(restaurante.cantidad_mesas):
             
             agregar_mesas(restaurante.restaurante_id)
-        cursor.close()
+
         return {'mensaje': 'Restaurante agregado correctamente'}
     except Exception as e:
-        if cursor:
-            cursor.close()
+        # Manejo de errores específico para agregar_restaurante
         return {'error': str(e)}
-
+    finally:
+        cursor.close()
 
 @app.route('/verificar_login', methods=['POST'])
 def verificar_login():
@@ -124,7 +122,7 @@ def verificar_login():
     if login.nombre is None or login.contrasena is None:
         return jsonify({'error': 'Nombre de usuario y contraseña son obligatorios'}), 400
 
-    
+    cursor = None  # Inicializa el cursor a None
 
     try:
         cursor = db_connection.cursor()
@@ -134,7 +132,6 @@ def verificar_login():
         usuario = cursor.fetchone()
 
         if usuario is None or not verificar_contraseña(login.contrasena, usuario[2]):
-            cursor.close()
             return jsonify({'error': 'Nombre de usuario o contraseña incorrectos'}), 401
 
         cursor.execute("SELECT * from restaurantes where UsuarioID = %s", (usuario[0],))
@@ -162,13 +159,14 @@ def verificar_login():
             }
 
         # Puedes devolver información adicional sobre el usuario si es necesario
-        cursor.close()
         return jsonify({'NombreUsuario': usuario[1], 'tipo': tipo, 'infousuario': tipov}), 200
 
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
         if cursor:
             cursor.close()
-        return jsonify({'error': str(e)}), 500
 
 
 
@@ -178,7 +176,6 @@ def verificar_contraseña(contraseña_ingresada, contraseña_almacenada):
     hash_ingresado = hashlib.sha256(contraseña_ingresada.encode('utf-8')).hexdigest()
 
     # Compara el hash calculado con el hash almacenado
-    
     return hash_ingresado == contraseña_almacenada
 
 def agregar_mesas(RestauranteID):
@@ -192,11 +189,10 @@ def agregar_mesas(RestauranteID):
         
 
     except Exception as e:
-        if cursor:
-            cursor.close()
         return jsonify({'error': str(e)}), 500
 
-   
+    finally:
+        cursor.close()
 
 @app.route('/obtener_mesas_por_restaurante', methods=['POST'])
 def obtener_mesas_por_restaurante():
@@ -206,7 +202,7 @@ def obtener_mesas_por_restaurante():
     if restaurante_id is None:
         return jsonify({'error': 'RestauranteID es obligatorio'}), 400
 
-    
+    cursor = None
     try:
         cursor = db_connection.cursor()
 
@@ -214,14 +210,12 @@ def obtener_mesas_por_restaurante():
         cursor.execute("SELECT * FROM mesas WHERE RestauranteID = %s", (restaurante_id,))
         mesas = cursor.fetchall()
         mi_json = [{"MesaID": item[0], "RestauranteID": item[1], "Disponibilidad": item[2]} for item in mesas]
-        cursor.close()
         return jsonify({'mesas': mi_json})
-    
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
         if cursor:
             cursor.close()
-        return jsonify({'error': str(e)}), 500
-    
 
 @app.route('/hacer_reservacion', methods=['POST'])
 def hacer_reservacion():
@@ -235,13 +229,11 @@ def hacer_reservacion():
 
         cursor.execute("INSERT INTO reservaciones (ClienteID, RestauranteID, MesaID, FechaReservacion) values(%s,%s,%s,%s)",(cliente_id, restaurante_id,mesa_id,fecha))
         db_connection.commit()
-        cursor.close()
         return jsonify({'mensaje': 'insercion exitosa'})
     except Exception as e:
-        if cursor:
-            cursor.close()
         return jsonify({'error': str(e)}), 500
-    
+    finally:
+        cursor.close()
 @app.route('/estadisticas_restaurante', methods=['POST'])
 def estadisticas_restaurante():
     datos = request.json
@@ -260,18 +252,17 @@ def estadisticas_restaurante():
         fecha_inicio_ultimos_3_meses = datetime.now() - timedelta(days=90)
         cursor.execute("SELECT COUNT(*) FROM reservaciones WHERE RestauranteID = %s AND FechaReservacion >= %s", (restaurante_id, fecha_inicio_ultimos_3_meses))
         reservas_ultimos_3_meses = cursor.fetchone()[0]
-        cursor.close()
+
         return jsonify({
             'clientes_en_mes': clientes_en_mes,
             'reservas_ultimos_3_meses': reservas_ultimos_3_meses
         })
     except Exception as e:
-        if cursor:
-            cursor.close()
         return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
 @app.route('/eliminar_reserva/<int:reserva_id>', methods=['DELETE'])
 def eliminar_reserva(reserva_id):
-   
     try:
         cursor = db_connection.cursor()
 
@@ -280,18 +271,16 @@ def eliminar_reserva(reserva_id):
         reserva = cursor.fetchone()
         
         if not reserva:
-            cursor.close()
             return jsonify({'mensaje': 'Reserva no encontrada'}), 404
 
         # Eliminar la reserva
         cursor.execute("DELETE FROM reservaciones WHERE ReservacionID = %s", (reserva_id,))
         db_connection.commit()
-        cursor.close()
+
         return jsonify({'mensaje': 'Reserva eliminada correctamente'})
     except Exception as e:
-        if cursor:
-            cursor.close()
         return jsonify({'error': str(e)}), 500
-    
+    finally:
+        cursor.close()    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port='5000')
