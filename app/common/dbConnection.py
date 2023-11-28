@@ -24,7 +24,7 @@ class DB:
         )
 
     def close_db(self):
-        db = self.config['db']
+        db = self.config['MYSQL_DB']
         if db is not None:
             db.close()
 
