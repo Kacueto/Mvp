@@ -75,7 +75,7 @@ def agregar_usuario():
         return jsonify({'error': str(e)}), 500
     finally: 
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 
 
 
@@ -96,7 +96,7 @@ def agregar_cliente( cliente, usuario_id):
         return {'error': str(e)}
     finally:
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 
 
 def agregar_restaurante(restaurante, usuario_id):
@@ -121,7 +121,7 @@ def agregar_restaurante(restaurante, usuario_id):
         return {'error': str(e)}
     finally:
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 
 @app.route('/verificar_login', methods=['POST'])
 def verificar_login():
@@ -176,7 +176,7 @@ def verificar_login():
 
     finally:
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 
 
 
@@ -205,7 +205,7 @@ def agregar_mesas(RestauranteID):
 
     finally:
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 
 @app.route('/obtener_mesas_por_restaurante', methods=['POST'])
 def obtener_mesas_por_restaurante():
@@ -230,7 +230,7 @@ def obtener_mesas_por_restaurante():
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 
 @app.route('/hacer_reservacion', methods=['POST'])
 def hacer_reservacion():
@@ -251,7 +251,7 @@ def hacer_reservacion():
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 @app.route('/estadisticas_restaurante', methods=['POST'])
 def estadisticas_restaurante():
     datos = request.json
@@ -281,7 +281,7 @@ def estadisticas_restaurante():
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
-        db.close_db()
+        db.close_db(db_connection)
 @app.route('/eliminar_reserva/<int:reserva_id>', methods=['DELETE'])
 def eliminar_reserva(reserva_id):
     try:
@@ -305,6 +305,6 @@ def eliminar_reserva(reserva_id):
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()    
-        db.close_db()
+        db.close_db(db_connection)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port='5000')
